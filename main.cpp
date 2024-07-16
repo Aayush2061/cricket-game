@@ -102,11 +102,11 @@ int main()
     ballSprite.setTexture(ballTexture);
     ballSprite.setPosition(630, 880); // Initial position of the ball
 
-    // Ball velocity (adjust as needed)
-    sf::Vector2f ballVelocity(0.0f, -0.010f); // Moves upwards with speed 2 pixels per frame
+    // Scale the ball sprite to make it larger
+    ballSprite.setScale(1.5f, 1.5f); // Scale the ball sprite by a factor of 2
 
-    // Decrease ball speed by 30%
-    ballVelocity *= 0.7f;
+    // Ball velocity (initial)
+    sf::Vector2f ballVelocity(0.0f, -0.1f); // Moves upwards with speed 0.5 pixel per frame
 
     // Random number generator setup
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
@@ -156,24 +156,11 @@ int main()
         {
             // Reset ball to initial position (630, 880)
             ballSprite.setPosition(630, 880);
-        }
 
-        // Check if enough time has passed to bowl again
-        timeSinceLastBowling += clock.restart();
-        if (timeSinceLastBowling >= bowlingInterval)
-        {
-            // Simulate ball hitting the ground within the specified rectangle most of the time
-            int randomChance = std::rand() % 100; // Generate a random number between 0 and 99
-            if (randomChance < 80)
-            {
-                // Random position within the rectangle (600, 350) to (770, 400)
-                float randomX = std::rand() % 171 + 600; // Random X coordinate between 600 and 770
-                float randomY = std::rand() % 51 + 350;  // Random Y coordinate between 350 and 400
-                ballSprite.setPosition(randomX, randomY);
-                ballVelocity.y = -std::abs(ballVelocity.y); // Reset ball velocity
-            }
-
-            timeSinceLastBowling = sf::seconds(0.0f); // Reset time since last bowl
+            // Add randomness to the ball's velocity
+            float randomXVelocity = (std::rand() % 5 - 2) / 100.0f;      // Random x velocity between -0.02 and 0.02
+            float randomYVelocity = -(0.1f + std::rand() % 10 / 100.0f); // Random y velocity between -0.1 and -0.19
+            ballVelocity = sf::Vector2f(randomXVelocity, randomYVelocity);
         }
 
         window.clear();
