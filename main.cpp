@@ -12,6 +12,9 @@ int ballCount = 0;
 // Run count
 int runCount = 0;
 
+// Wicket Count
+int wicketCount = 0;
+
 // Function to get formatted overs and balls as a string
 std::string getOversString()
 {
@@ -219,6 +222,13 @@ int main()
     runText.setFillColor(sf::Color::White);
     runText.setPosition(10, 70); // Position text in the top-left corner
 
+    // Create text for displaying Wickets
+    sf::Text wicketText;
+    wicketText.setFont(font);
+    wicketText.setCharacterSize(30); // Set character size
+    wicketText.setFillColor(sf::Color::White);
+    wicketText.setPosition(10, 100); // Position text in the top-left corner
+
     // Game loop
     while (window.isOpen())
     {
@@ -296,14 +306,19 @@ int main()
             // Ball is out of screen or not hitting the bat
             if (ballSprite.getPosition().y <= 10)
             {
-                if (ballSprite.getPosition().x <= 600 || ballSprite.getPosition().x >= window.getSize().x)
+
+                if (ballSprite.getPosition().x > 700)
+                {
+                    currentEvent = "Dot ball";
+                }
+                else if (ballSprite.getPosition().x <= 600 || ballSprite.getPosition().x >= window.getSize().x)
                 {
                     // Check if the ball is out of screen and hasn't collided with the bat
                     currentEvent = "Wide ball";
                 }
-                else if (!batSwinging)
+                else if (ballSprite.getPosition().x >= 650 || ballSprite.getPosition().x <= 700)
                 {
-                    currentEvent = "Dot ball";
+                    currentEvent = "Wicket";
                 }
             }
         }
@@ -320,6 +335,10 @@ int main()
             float randomXVelocity = (std::rand() % 5 - 2) / 100.0f;      // Random x velocity between -0.02 and 0.02
             float randomYVelocity = -(0.1f + std::rand() % 10 / 100.0f); // Random y velocity between -0.1 and -0.19
             ballVelocity = sf::Vector2f(randomXVelocity, randomYVelocity);
+            if (currentEvent == "Wicket")
+            {
+                wicketCount++;
+            }
             if (currentEvent != "Wide ball")
             {
                 // runCount++;
@@ -370,6 +389,9 @@ int main()
         // Update the runs text
         runText.setString("Runs: " + std::to_string(runCount));
 
+        // Update the runs text
+        wicketText.setString("Wickets: " + std::to_string(wicketCount));
+
         // Draw the event text on top of everything
         window.draw(eventText);
 
@@ -378,6 +400,9 @@ int main()
 
         // Draw the overs text on the screen
         window.draw(runText);
+
+        // Draw the overs text on the screen
+        window.draw(wicketText);
 
         window.display();
     }
