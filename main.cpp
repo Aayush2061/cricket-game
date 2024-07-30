@@ -5,9 +5,22 @@
 #include <ctime>   // For time()
 #include <cmath>   // For trigonometric functions
 #include <string>  // For std::string
+using namespace std;
+// ball count
+int ballCount = 0;
+
+// Run count
+int runCount = 0;
+
+// Function to get formatted overs and balls as a string
+std::string getOversString()
+{
+    int overs = ballCount / 6;
+    int balls = ballCount % 6;
+    return std::to_string(overs) + "." + std::to_string(balls);
+}
 
 // Function to generate a random number up to a specified maximum value
-
 int generateRandomNumber(int max)
 
 {
@@ -37,15 +50,19 @@ std::string generateRandomRun()
     {
     case 0:
         runEvent = "1 run";
+        runCount += 1;
         break;
     case 1:
         runEvent = "2 runs";
+        runCount += 2;
         break;
     case 2:
         runEvent = "4 runs";
+        runCount += 4;
         break;
     case 3:
         runEvent = "6 runs";
+        runCount += 6;
         break;
     }
     return runEvent;
@@ -187,8 +204,14 @@ int main()
     eventText.setCharacterSize(30); // Set character size
     eventText.setFillColor(sf::Color::White);
     eventText.setPosition(10, 10); // Position text in the top-left corner
-
     std::string currentEvent = ""; // Variable to store the current event
+
+    // Create text for displaying overs
+    sf::Text overText;
+    overText.setFont(font);
+    overText.setCharacterSize(30); // Set character size
+    overText.setFillColor(sf::Color::White);
+    overText.setPosition(10, 40); // Position text in the top-left corner
 
     // Game loop
     while (window.isOpen())
@@ -291,6 +314,10 @@ int main()
             float randomXVelocity = (std::rand() % 5 - 2) / 100.0f;      // Random x velocity between -0.02 and 0.02
             float randomYVelocity = -(0.1f + std::rand() % 10 / 100.0f); // Random y velocity between -0.1 and -0.19
             ballVelocity = sf::Vector2f(randomXVelocity, randomYVelocity);
+            if (currentEvent != "Wide ball")
+            {
+                ballCount++;
+            }
         }
 
         window.clear();
@@ -307,8 +334,14 @@ int main()
         // Update the event text
         eventText.setString("Event: " + currentEvent);
 
+        // Update the overs text
+        overText.setString("Overs: " + getOversString());
+
         // Draw the event text on top of everything
         window.draw(eventText);
+
+        // Draw the overs text on the screen
+        window.draw(overText);
 
         window.display();
     }
