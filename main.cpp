@@ -338,6 +338,39 @@ int main()
             if (currentEvent == "Wicket")
             {
                 wicketCount++;
+
+                // Load texture for the splash screen
+                sf::Texture splashTexture;
+                if (!splashTexture.loadFromFile("out.jpg"))
+                {
+                    std::cerr << "Failed to load splash texture!" << std::endl;
+                    return -1;
+                }
+
+                // Create sprite for the splash screen
+                sf::Sprite splashSprite;
+                splashSprite.setTexture(splashTexture);
+
+                // Scale the splash sprite to fit the window
+                float splashScaleX = static_cast<float>(window.getSize().x) / splashTexture.getSize().x;
+                float splashScaleY = static_cast<float>(window.getSize().y) / splashTexture.getSize().y;
+                splashSprite.setScale(splashScaleX, splashScaleY);
+
+                // Display the splash screen for 5 seconds
+                sf::Clock splashClock;
+                while (splashClock.getElapsedTime().asSeconds() < 2.0f)
+                {
+                    sf::Event event;
+                    while (window.pollEvent(event))
+                    {
+                        if (event.type == sf::Event::Closed)
+                            window.close();
+                    }
+
+                    window.clear();
+                    window.draw(splashSprite);
+                    window.display();
+                }
             }
             if (currentEvent != "Wide ball")
             {
@@ -348,6 +381,39 @@ int main()
             if (currentEvent == "Wide ball")
             {
                 runCount++;
+
+                // Load texture for the splash screen
+                sf::Texture splashTexture;
+                if (!splashTexture.loadFromFile("wide.jpg"))
+                {
+                    std::cerr << "Failed to load splash texture!" << std::endl;
+                    return -1;
+                }
+
+                // Create sprite for the splash screen
+                sf::Sprite splashSprite;
+                splashSprite.setTexture(splashTexture);
+
+                // Scale the splash sprite to fit the window
+                float splashScaleX = static_cast<float>(window.getSize().x) / splashTexture.getSize().x;
+                float splashScaleY = static_cast<float>(window.getSize().y) / splashTexture.getSize().y;
+                splashSprite.setScale(splashScaleX, splashScaleY);
+
+                // Display the splash screen for 5 seconds
+                sf::Clock splashClock;
+                while (splashClock.getElapsedTime().asSeconds() < 2.0f)
+                {
+                    sf::Event event;
+                    while (window.pollEvent(event))
+                    {
+                        if (event.type == sf::Event::Closed)
+                            window.close();
+                    }
+
+                    window.clear();
+                    window.draw(splashSprite);
+                    window.display();
+                }
             }
             if (currentEvent == "1 run")
             {
@@ -362,11 +428,136 @@ int main()
             if (currentEvent == "4 runs")
             {
                 runCount += 4;
+
+                // Load textures for splash screens
+                sf::Texture splashTexture1, splashTexture2;
+                if (!splashTexture1.loadFromFile("four.jpg") || !splashTexture2.loadFromFile("cheerLeader.jpg"))
+                {
+                    std::cerr << "Failed to load splash textures!" << std::endl;
+                    return -1;
+                }
+
+                // Create sprites for splash screens
+                sf::Sprite splashSprite1(splashTexture1);
+                sf::Sprite splashSprite2(splashTexture2);
+
+                // Scale the splash sprites to fit the window
+                float splashScaleX1 = static_cast<float>(window.getSize().x) / splashTexture1.getSize().x;
+                float splashScaleY1 = static_cast<float>(window.getSize().y) / splashTexture1.getSize().y;
+                splashSprite1.setScale(splashScaleX1, splashScaleY1);
+
+                float splashScaleX2 = static_cast<float>(window.getSize().x) / splashTexture2.getSize().x;
+                float splashScaleY2 = static_cast<float>(window.getSize().y) / splashTexture2.getSize().y;
+                splashSprite2.setScale(splashScaleX2, splashScaleY2);
+
+                // Load music for the splash screen
+                sf::Music splashMusic;
+                if (!splashMusic.openFromFile("cheerSound1.ogg"))
+                {
+                    std::cerr << "Failed to load splash music!" << std::endl;
+                    // Continue without playing music if loading fails
+                }
+                else
+                {
+                    splashMusic.play(); // Play the splash music
+                }
+
+                // Display the first splash screen for 2 seconds
+                sf::Clock splashClock;
+                while (window.isOpen())
+                {
+                    sf::Event event;
+                    while (window.pollEvent(event))
+                    {
+                        if (event.type == sf::Event::Closed)
+                            window.close();
+                    }
+
+                    window.clear();
+                    if (splashClock.getElapsedTime().asSeconds() < 2.0f)
+                    {
+                        window.draw(splashSprite1);
+                    }
+                    else if (splashClock.getElapsedTime().asSeconds() < 4.0f)
+                    {
+                        window.draw(splashSprite2);
+                    }
+                    else
+                    {
+                        // Break the loop and proceed to the main game
+                        break;
+                    }
+                    window.display();
+                }
+                // Stop and release resources for splash music
+                splashMusic.stop();
             }
 
             if (currentEvent == "6 runs")
             {
                 runCount += 6;
+
+                // Load textures for splash screens
+                sf::Texture splashTexture1, splashTexture2;
+                if (!splashTexture1.loadFromFile("six.jpg") || !splashTexture2.loadFromFile("cheerLeader.jpg"))
+                {
+                    std::cerr << "Failed to load splash textures!" << std::endl;
+                    return -1;
+                }
+
+                // Create sprites for splash screens
+                sf::Sprite splashSprite1(splashTexture1);
+                sf::Sprite splashSprite2(splashTexture2);
+
+                // Scale the splash sprites to fit the window
+                float splashScaleX1 = static_cast<float>(window.getSize().x) / splashTexture1.getSize().x;
+                float splashScaleY1 = static_cast<float>(window.getSize().y) / splashTexture1.getSize().y;
+                splashSprite1.setScale(splashScaleX1, splashScaleY1);
+
+                float splashScaleX2 = static_cast<float>(window.getSize().x) / splashTexture2.getSize().x;
+                float splashScaleY2 = static_cast<float>(window.getSize().y) / splashTexture2.getSize().y;
+                splashSprite2.setScale(splashScaleX2, splashScaleY2);
+
+                // Load music for the splash screen
+                sf::Music splashMusic;
+                if (!splashMusic.openFromFile("cheerSound1.ogg"))
+                {
+                    std::cerr << "Failed to load splash music!" << std::endl;
+                    // Continue without playing music if loading fails
+                }
+                else
+                {
+                    splashMusic.play(); // Play the splash music
+                }
+                // Display the first splash screen for 2 seconds
+                sf::Clock splashClock;
+                while (window.isOpen())
+                {
+                    sf::Event event;
+                    while (window.pollEvent(event))
+                    {
+                        if (event.type == sf::Event::Closed)
+                            window.close();
+                    }
+
+                    window.clear();
+                    if (splashClock.getElapsedTime().asSeconds() < 2.0f)
+                    {
+                        window.draw(splashSprite1);
+                    }
+                    else if (splashClock.getElapsedTime().asSeconds() < 4.0f)
+                    {
+                        window.draw(splashSprite2);
+                    }
+                    else
+                    {
+                        // Break the loop and proceed to the main game
+                        break;
+                    }
+                    window.display();
+                }
+                // Stop and release resources for splash music
+                splashMusic.stop();
             }
         }
         window.clear();
