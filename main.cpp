@@ -232,6 +232,47 @@ int main()
     // Game loop
     while (window.isOpen())
     {
+        if (ballCount == 36 || wicketCount == 11)
+        {
+            // Load texture for the splash screen
+            sf::Texture splashTexture;
+            if (!splashTexture.loadFromFile("gameover.jpg"))
+            {
+                std::cerr << "Failed to load splash texture!" << std::endl;
+                return -1;
+            }
+
+            // Create sprite for the splash screen
+            sf::Sprite splashSprite;
+            splashSprite.setTexture(splashTexture);
+
+            // Scale the splash sprite to fit the window
+            float splashScaleX = static_cast<float>(window.getSize().x) / splashTexture.getSize().x;
+            float splashScaleY = static_cast<float>(window.getSize().y) / splashTexture.getSize().y;
+            splashSprite.setScale(splashScaleX, splashScaleY);
+
+            // Enable alpha blending
+            window.clear(sf::Color(0, 0, 0, 0)); // Clear with transparent color
+
+            // Display the splash screen for 5 seconds
+            sf::Clock splashClock;
+            while (splashClock.getElapsedTime().asSeconds() < 5.0f)
+            {
+                sf::Event event;
+                while (window.pollEvent(event))
+                {
+                    if (event.type == sf::Event::Closed)
+                        window.close();
+                }
+
+                window.clear(sf::Color(0, 0, 0, 0)); // Clear with transparent color
+                window.draw(splashSprite);
+                window.display();
+            }
+
+            window.close();
+            exit(0);
+        }
         sf::Event event;
         while (window.pollEvent(event))
         {
