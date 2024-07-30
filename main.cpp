@@ -35,7 +35,6 @@ sf::Vector2f setBallVelocity(float angleDeg, float speed)
 {
 
     float angleRad = angleDeg * 3.14159265f / 180.0f;
-
     return sf::Vector2f(speed * std::cos(angleRad), speed * std::sin(angleRad));
 }
 
@@ -50,19 +49,19 @@ std::string generateRandomRun()
     {
     case 0:
         runEvent = "1 run";
-        runCount += 1;
+        // runCount += 1;
         break;
     case 1:
         runEvent = "2 runs";
-        runCount += 2;
+        // runCount += 2;
         break;
     case 2:
         runEvent = "4 runs";
-        runCount += 4;
+        // runCount += 4;
         break;
     case 3:
         runEvent = "6 runs";
-        runCount += 6;
+        // runCount += 6;
         break;
     }
     return runEvent;
@@ -213,6 +212,13 @@ int main()
     overText.setFillColor(sf::Color::White);
     overText.setPosition(10, 40); // Position text in the top-left corner
 
+    // Create text for displaying Runs
+    sf::Text runText;
+    runText.setFont(font);
+    runText.setCharacterSize(30); // Set character size
+    runText.setFillColor(sf::Color::White);
+    runText.setPosition(10, 70); // Position text in the top-left corner
+
     // Game loop
     while (window.isOpen())
     {
@@ -316,10 +322,34 @@ int main()
             ballVelocity = sf::Vector2f(randomXVelocity, randomYVelocity);
             if (currentEvent != "Wide ball")
             {
+                // runCount++;
                 ballCount++;
             }
-        }
 
+            if (currentEvent == "Wide ball")
+            {
+                runCount++;
+            }
+            if (currentEvent == "1 run")
+            {
+                runCount++;
+            }
+
+            if (currentEvent == "2 runs")
+            {
+                runCount += 2;
+            }
+
+            if (currentEvent == "4 runs")
+            {
+                runCount += 4;
+            }
+
+            if (currentEvent == "6 runs")
+            {
+                runCount += 6;
+            }
+        }
         window.clear();
 
         // Draw the pitch sprite (which now fills the window)
@@ -337,11 +367,17 @@ int main()
         // Update the overs text
         overText.setString("Overs: " + getOversString());
 
+        // Update the runs text
+        runText.setString("Runs: " + std::to_string(runCount));
+
         // Draw the event text on top of everything
         window.draw(eventText);
 
         // Draw the overs text on the screen
         window.draw(overText);
+
+        // Draw the overs text on the screen
+        window.draw(runText);
 
         window.display();
     }
