@@ -70,57 +70,81 @@ std::string generateRandomRun()
     return runEvent;
 }
 
-int main()
+// Enumeration for the different game states
+enum GameState
 {
-    sf::RenderWindow window(sf::VideoMode(1200, 900), "Full Window Pitch");
+    MAIN_MENU,
+    GAME,
+    GUIDELINES
+};
 
-    // Load texture for the splash screen
-    sf::Texture splashTexture;
-    if (!splashTexture.loadFromFile("poster.png"))
+// Class for the main menu
+class MainMenu
+{
+public:
+    MainMenu(float width, float height)
     {
-        std::cerr << "Failed to load splash texture!" << std::endl;
-        return -1;
-    }
-
-    // Create sprite for the splash screen
-    sf::Sprite splashSprite;
-    splashSprite.setTexture(splashTexture);
-
-    // Scale the splash sprite to fit the window
-    float splashScaleX = static_cast<float>(window.getSize().x) / splashTexture.getSize().x;
-    float splashScaleY = static_cast<float>(window.getSize().y) / splashTexture.getSize().y;
-    splashSprite.setScale(splashScaleX, splashScaleY);
-
-    // Load music for the splash screen
-    sf::Music splashMusic;
-    if (!splashMusic.openFromFile("an.ogg"))
-    {
-        std::cerr << "Failed to load splash music!" << std::endl;
-        // Continue without playing music if loading fails
-    }
-    else
-    {
-        splashMusic.play(); // Play the splash music
-    }
-
-    // Display the splash screen for 5 seconds
-    sf::Clock splashClock;
-    while (splashClock.getElapsedTime().asSeconds() < 5.0f)
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
+        if (!font.loadFromFile("arial.ttf"))
         {
-            if (event.type == sf::Event::Closed)
-                window.close();
+            // handle error
         }
 
-        window.clear();
-        window.draw(splashSprite);
-        window.display();
+        menu[0].setFont(font);
+        menu[0].setFillColor(sf::Color::Red);
+        menu[0].setString("Play Now");
+        menu[0].setPosition(sf::Vector2f(width / 2, height / (2 + 1) * 1));
+
+        menu[1].setFont(font);
+        menu[1].setFillColor(sf::Color::White);
+        menu[1].setString("Guidelines");
+        menu[1].setPosition(sf::Vector2f(width / 2, height / (2 + 1) * 2));
+
+        selectedItemIndex = 0;
     }
 
-    // Stop and release resources for splash music
-    splashMusic.stop();
+    void draw(sf::RenderWindow &window)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            window.draw(menu[i]);
+        }
+    }
+
+    void moveUp()
+    {
+        if (selectedItemIndex - 1 >= 0)
+        {
+            menu[selectedItemIndex].setFillColor(sf::Color::White);
+            selectedItemIndex--;
+            menu[selectedItemIndex].setFillColor(sf::Color::Red);
+        }
+    }
+
+    void moveDown()
+    {
+        if (selectedItemIndex + 1 < 2)
+        {
+            menu[selectedItemIndex].setFillColor(sf::Color::White);
+            selectedItemIndex++;
+            menu[selectedItemIndex].setFillColor(sf::Color::Red);
+        }
+    }
+
+    int getSelectedItemIndex()
+    {
+        return selectedItemIndex;
+    }
+
+private:
+    int selectedItemIndex;
+    sf::Font font;
+    sf::Text menu[2];
+};
+
+// Function to show the game scene
+int showGame(sf::RenderWindow &window, GameState &gameState)
+{
+    // sf::RenderWindow window(sf::VideoMode(1200, 900), "Full Window Pitch");
 
     // Load texture for the pitch
     sf::Texture pitchTexture;
@@ -230,8 +254,11 @@ int main()
     wicketText.setPosition(10, 100); // Position text in the top-left corner
 
     // Game loop
-    while (window.isOpen())
+    while (window.isOpen() && gameState == GAME)
     {
+
+        sf::Event event;
+
         if (ballCount == 36 || wicketCount == 11)
         {
             // Load texture for the splash screen
@@ -273,9 +300,19 @@ int main()
             window.close();
             exit(0);
         }
-        sf::Event event;
+        // sf::Event event;
         while (window.pollEvent(event))
         {
+            // Code to take back to main menu from game
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+            {
+                gameState = MAIN_MENU; // Change state to return to Main Menu
+                return 0;              // Exit the function to return to the main loop
+            }
             if (event.type == sf::Event::Closed)
                 window.close();
 
@@ -601,6 +638,7 @@ int main()
                 splashMusic.stop();
             }
         }
+
         window.clear();
 
         // Draw the pitch sprite (which now fills the window)
@@ -636,6 +674,160 @@ int main()
         // Draw the overs text on the screen
         window.draw(wicketText);
 
+        window.display();
+    }
+}
+
+void showGuidelines(sf::RenderWindow &window, GameState &gameState)
+{
+    // Define the guidelines
+    const std::string guidelines[] = {
+        "Guidelines for Cricket Game:",
+        "1. Press 'A' for leg shots.",
+        "2. Press 'D' for off shots.",
+        "3. Press 'W' for straight shots.",
+        "4. The run, over, wicket, and previous ball event are displayed",
+        "   at the top left of the game screen.",
+        "5. Press 'Esc' to go back to the Main Menu."};
+
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf"))
+    {
+        // Handle error
+    }
+
+    sf::Text guidelinesText;
+    guidelinesText.setFont(font);
+    guidelinesText.setFillColor(sf::Color::White);
+    guidelinesText.setCharacterSize(24); // Increased font size for better readability
+
+    float xOffset = 50; // Adjusted to fit within window width
+    float yOffset = 50; // Adjusted to fit within window height
+    window.clear();
+    for (const auto &line : guidelines)
+    {
+        guidelinesText.setString(line);
+        guidelinesText.setPosition(xOffset, yOffset);
+        window.draw(guidelinesText);
+        yOffset += 40; // Increased spacing between lines for readability
+    }
+    window.display();
+
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+            {
+                gameState = MAIN_MENU; // Change state to return to Main Menu
+                return;                // Exit the function to return to the main loop
+            }
+        }
+    }
+}
+
+int main()
+{
+    sf::RenderWindow window(sf::VideoMode(1200, 900), "SFML Cricket Game");
+    // Load texture for the splash screen
+    sf::Texture splashTexture;
+    if (!splashTexture.loadFromFile("poster.png"))
+    {
+        std::cerr << "Failed to load splash texture!" << std::endl;
+        return -1;
+    }
+
+    // Create sprite for the splash screen
+    sf::Sprite splashSprite;
+    splashSprite.setTexture(splashTexture);
+
+    // Scale the splash sprite to fit the window
+    float splashScaleX = static_cast<float>(window.getSize().x) / splashTexture.getSize().x;
+    float splashScaleY = static_cast<float>(window.getSize().y) / splashTexture.getSize().y;
+    splashSprite.setScale(splashScaleX, splashScaleY);
+
+    // Load music for the splash screen
+    sf::Music splashMusic;
+    if (!splashMusic.openFromFile("an.ogg"))
+    {
+        std::cerr << "Failed to load splash music!" << std::endl;
+        // Continue without playing music if loading fails
+    }
+    else
+    {
+        splashMusic.play(); // Play the splash music
+    }
+
+    // Display the splash screen for 5 seconds
+    sf::Clock splashClock;
+    while (splashClock.getElapsedTime().asSeconds() < 5.0f)
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear();
+        window.draw(splashSprite);
+        window.display();
+    }
+
+    // Stop and release resources for splash music
+    splashMusic.stop();
+    MainMenu mainMenu(window.getSize().x, window.getSize().y);
+
+    GameState gameState = MAIN_MENU;
+
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+
+            if (gameState == MAIN_MENU)
+            {
+                if (event.type == sf::Event::KeyReleased)
+                {
+                    if (event.key.code == sf::Keyboard::Up)
+                    {
+                        mainMenu.moveUp();
+                    }
+                    else if (event.key.code == sf::Keyboard::Down)
+                    {
+                        mainMenu.moveDown();
+                    }
+                    else if (event.key.code == sf::Keyboard::Return)
+                    {
+                        int selectedItem = mainMenu.getSelectedItemIndex();
+                        if (selectedItem == 0)
+                        {
+                            gameState = GAME;
+                            showGame(window, gameState); // Pass the gameState
+                        }
+                        else if (selectedItem == 1)
+                        {
+                            gameState = GUIDELINES;
+                            showGuidelines(window, gameState); // No need to pass gameState for guidelines
+                        }
+                    }
+                }
+            }
+        }
+
+        window.clear();
+        if (gameState == MAIN_MENU)
+        {
+            mainMenu.draw(window);
+        }
         window.display();
     }
 
