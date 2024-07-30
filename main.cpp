@@ -4,6 +4,52 @@
 #include <cstdlib> // For rand() and srand()
 #include <ctime>   // For time()
 #include <cmath>   // For trigonometric functions
+#include <string>  // For std::string
+
+// Function to generate a random number up to a specified maximum value
+
+int generateRandomNumber(int max)
+
+{
+
+    return std::rand() % (max + 1);
+}
+
+// Function to set ball velocity with randomness based on angle
+
+sf::Vector2f setBallVelocity(float angleDeg, float speed)
+
+{
+
+    float angleRad = angleDeg * 3.14159265f / 180.0f;
+
+    return sf::Vector2f(speed * std::cos(angleRad), speed * std::sin(angleRad));
+}
+
+std::string generateRandomRun()
+{
+    // Generate a random number to decide the runs
+    int runs = generateRandomNumber(3); // Random number between 0 and 3
+    std::string runEvent;
+
+    // Map the random number to runs
+    switch (runs)
+    {
+    case 0:
+        runEvent = "1 run";
+        break;
+    case 1:
+        runEvent = "2 runs";
+        break;
+    case 2:
+        runEvent = "4 runs";
+        break;
+    case 3:
+        runEvent = "6 runs";
+        break;
+    }
+    return runEvent;
+}
 
 int main()
 {
@@ -127,6 +173,23 @@ int main()
         return sf::Vector2f(speed * std::cos(angleRad), speed * std::sin(angleRad));
     };
 
+    // Load font for displaying text
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf"))
+    {
+        std::cerr << "Failed to load font!" << std::endl;
+        return -1;
+    }
+
+    // Create text for displaying event
+    sf::Text eventText;
+    eventText.setFont(font);
+    eventText.setCharacterSize(30); // Set character size
+    eventText.setFillColor(sf::Color::White);
+    eventText.setPosition(10, 10); // Position text in the top-left corner
+
+    std::string currentEvent = ""; // Variable to store the current event
+
     // Game loop
     while (window.isOpen())
     {
@@ -182,18 +245,37 @@ int main()
                 // Move ball to the left with randomness
                 float randomAngle = 180.0f + static_cast<float>(std::rand() % 60 - 30); // Random angle between 150 and 210 degrees
                 ballVelocity = setBallVelocity(randomAngle, 0.2f);                      // Speed of 0.2
+                currentEvent = generateRandomRun();
             }
             else if (batsmenSprite.getTexture() == &batsmanBattingTexture)
             {
                 // Move ball to the right with randomness
                 float randomAngle = 0.0f + static_cast<float>(std::rand() % 60 - 30); // Random angle between -30 and 30 degrees
                 ballVelocity = setBallVelocity(randomAngle, 0.2f);                    // Speed of 0.2
+                currentEvent = generateRandomRun();
             }
             else if (batsmenSprite.getTexture() == &batsmanFieldingTexture)
             {
                 // Move ball straight with randomness
                 float randomAngle = -90.0f + static_cast<float>(std::rand() % 30 - 15); // Random angle between -105 and -75 degrees
                 ballVelocity = setBallVelocity(randomAngle, 0.2f);                      // Speed of 0.2
+                currentEvent = generateRandomRun();
+            }
+        }
+        else
+        {
+            // Ball is out of screen or not hitting the bat
+            if (ballSprite.getPosition().y <= 10)
+            {
+                if (ballSprite.getPosition().x <= 600 || ballSprite.getPosition().x >= window.getSize().x)
+                {
+                    // Check if the ball is out of screen and hasn't collided with the bat
+                    currentEvent = "Wide ball";
+                }
+                else if (!batSwinging)
+                {
+                    currentEvent = "Dot ball";
+                }
             }
         }
 
@@ -221,6 +303,12 @@ int main()
 
         // Draw the batsmen sprite on top of the pitch
         window.draw(batsmenSprite);
+
+        // Update the event text
+        eventText.setString("Event: " + currentEvent);
+
+        // Draw the event text on top of everything
+        window.draw(eventText);
 
         window.display();
     }
