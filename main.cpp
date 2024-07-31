@@ -15,6 +15,14 @@ int runCount = 0;
 // Wicket Count
 int wicketCount = 0;
 
+void resetGame()
+{
+    runCount = 0;
+    ballCount = 0;
+    wicketCount = 0;
+    // Reset other game variables as needed
+}
+
 // Function to get formatted overs and balls as a string
 std::string getOversString()
 {
@@ -75,7 +83,9 @@ enum GameState
 {
     MAIN_MENU,
     GAME,
-    GUIDELINES
+    GUIDELINES,
+    GAME_OVER
+
 };
 
 // Class for the main menu
@@ -141,11 +151,132 @@ private:
     sf::Text menu[2];
 };
 
+/* -----------------------------------------------------------------------------FOR GAME OVER FEATURE-----------------------------------------------------------------------------------------*/
+class GameOverScreen
+{
+public:
+    GameOverScreen(float width, float height)
+    {
+        if (!font.loadFromFile("arial.ttf"))
+        {
+            // Handle error
+        }
+
+        menu[0].setFont(font);
+        menu[0].setFillColor(sf::Color::Red);
+        menu[0].setString("Play Again");
+        menu[0].setPosition(sf::Vector2f(width / 2, height / (3 + 1) * 1));
+
+        menu[1].setFont(font);
+        menu[1].setFillColor(sf::Color::White);
+        menu[1].setString("Exit");
+        menu[1].setPosition(sf::Vector2f(width / 2, height / (3 + 1) * 2));
+
+        selectedItemIndex = 0;
+    }
+
+    void draw(sf::RenderWindow &window)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            window.draw(menu[i]);
+        }
+    }
+
+    void moveUp()
+    {
+        if (selectedItemIndex - 1 >= 0)
+        {
+            menu[selectedItemIndex].setFillColor(sf::Color::White);
+            selectedItemIndex--;
+            menu[selectedItemIndex].setFillColor(sf::Color::Red);
+        }
+    }
+
+    void moveDown()
+    {
+        if (selectedItemIndex + 1 < 2)
+        {
+            menu[selectedItemIndex].setFillColor(sf::Color::White);
+            selectedItemIndex++;
+            menu[selectedItemIndex].setFillColor(sf::Color::Red);
+        }
+    }
+
+    int getSelectedItemIndex()
+    {
+        return selectedItemIndex;
+    }
+
+private:
+    int selectedItemIndex;
+    sf::Font font;
+    sf::Text menu[2];
+};
+
+void showGameOver(sf::RenderWindow &window, GameState &gameState)
+{
+    GameOverScreen gameOverScreen(window.getSize().x, window.getSize().y);
+    bool keyPressed = false;
+
+    while (window.isOpen() && gameState == GAME_OVER)
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+                return; // Ensure we exit the function
+            }
+
+            if (event.type == sf::Event::KeyReleased)
+            {
+                if (!keyPressed) // Process the key press only if it hasn’t been processed yet
+                {
+                    keyPressed = true; // Set the flag to avoid handling the key press multiple times
+                    if (event.key.code == sf::Keyboard::Up)
+                    {
+                        gameOverScreen.moveUp();
+                    }
+                    else if (event.key.code == sf::Keyboard::Down)
+                    {
+                        gameOverScreen.moveDown();
+                    }
+                    else if (event.key.code == sf::Keyboard::Return)
+                    {
+                        int selectedItem = gameOverScreen.getSelectedItemIndex();
+                        if (selectedItem == 0)
+                        {
+                            resetGame();      // Ensure the game is properly reset
+                            gameState = GAME; // Update the game state
+                            return;           // Exit to restart the game
+                        }
+                        else if (selectedItem == 1)
+                        {
+                            gameState = MAIN_MENU; // Update the game state
+                            return;                // Exit to return to the main menu
+                        }
+                    }
+                }
+            }
+        }
+
+        // Reset key press flag after processing events
+        keyPressed = false;
+
+        window.clear();
+        gameOverScreen.draw(window);
+        window.display();
+    }
+}
+
+/* -----------------------------------------------------------------------------FOR GAME OVER FEATURE-------------------------------------------------*/
+
 // Function to show the game scene
 int showGame(sf::RenderWindow &window, GameState &gameState)
 {
     // sf::RenderWindow window(sf::VideoMode(1200, 900), "Full Window Pitch");
-
     // Load texture for the pitch
     sf::Texture pitchTexture;
     if (!pitchTexture.loadFromFile("ground.jpg"))
@@ -259,7 +390,7 @@ int showGame(sf::RenderWindow &window, GameState &gameState)
 
         sf::Event event;
 
-        if (ballCount == 36 || wicketCount == 11)
+        if (ballCount == 35 || wicketCount == 11)
         {
             // Load texture for the splash screen
             sf::Texture splashTexture;
@@ -283,7 +414,7 @@ int showGame(sf::RenderWindow &window, GameState &gameState)
 
             // Display the splash screen for 5 seconds
             sf::Clock splashClock;
-            while (splashClock.getElapsedTime().asSeconds() < 5.0f)
+            while (splashClock.getElapsedTime().asSeconds() < 1.0f)
             {
                 sf::Event event;
                 while (window.pollEvent(event))
@@ -296,9 +427,20 @@ int showGame(sf::RenderWindow &window, GameState &gameState)
                 window.draw(splashSprite);
                 window.display();
             }
+            // ball count
+            int ballCount = 0;
 
-            window.close();
-            exit(0);
+            // Run count
+            int runCount = 0;
+
+            // Wicket Count
+            int wicketCount = 0;
+
+            gameState = GAME_OVER;
+            return 0;
+
+            // window.close();
+            // exit(0);
         }
         // sf::Event event;
         while (window.pollEvent(event))
@@ -734,6 +876,7 @@ void showGuidelines(sf::RenderWindow &window, GameState &gameState)
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1200, 900), "SFML Cricket Game");
+
     // Load texture for the splash screen
     sf::Texture splashTexture;
     if (!splashTexture.loadFromFile("poster.png"))
@@ -781,9 +924,10 @@ int main()
 
     // Stop and release resources for splash music
     splashMusic.stop();
-    MainMenu mainMenu(window.getSize().x, window.getSize().y);
 
     GameState gameState = MAIN_MENU;
+    MainMenu mainMenu(window.getSize().x, window.getSize().y);
+    GameOverScreen gameOverScreen(window.getSize().x, window.getSize().y);
 
     while (window.isOpen())
     {
@@ -791,7 +935,10 @@ int main()
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
+            {
                 window.close();
+                return 0; // Exit the application
+            }
 
             if (gameState == MAIN_MENU)
             {
@@ -811,14 +958,26 @@ int main()
                         if (selectedItem == 0)
                         {
                             gameState = GAME;
-                            showGame(window, gameState); // Pass the gameState
+                            resetGame();                 // Ensure the game is properly reset
+                            showGame(window, gameState); // Pass the gameState to showGame
+                            gameState = MAIN_MENU;       // Ensure we return to the main menu state
                         }
                         else if (selectedItem == 1)
                         {
                             gameState = GUIDELINES;
-                            showGuidelines(window, gameState); // No need to pass gameState for guidelines
+                            showGuidelines(window, gameState); // Pass the gameState to showGuidelines
+                            gameState = MAIN_MENU;             // Ensure we return to the main menu state
                         }
                     }
+                }
+            }
+            else if (gameState == GAME_OVER)
+            {
+                showGameOver(window, gameState);
+                if (gameState == MAIN_MENU)
+                {
+                    // Reinitialize the main menu
+                    mainMenu = MainMenu(window.getSize().x, window.getSize().y);
                 }
             }
         }
